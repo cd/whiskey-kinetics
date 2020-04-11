@@ -10,7 +10,7 @@ export default class Border {
    */
   constructor(from, to, restitution = null) {
     this.from = from;
-    this.to = to;
+    this.to = to; // TODO: rename
     this.restitution = restitution;
   }
 }

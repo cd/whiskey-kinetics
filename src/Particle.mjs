@@ -24,10 +24,10 @@ export default class Particle {
     referenceArea = 1
   ) {
     this._accelerations = [];
-    this._impacts = [];
     this._lastUpdate = time;
     this.mass = mass;
-    this._position = position;
+    this._position = position.clone();
+    this._lastPosition = position.clone();
     this._velocity = velocity;
     this.dragCoefficient = dragCoefficient;
     this.referenceArea = referenceArea;
@@ -50,18 +50,38 @@ export default class Particle {
 
   /**
    * TODO
-   * @param {Vec2D} velocity
-   * @param {number} mass
+   * @param {Vec2D} impactLine
    * @param {number} [coefficientOfRestitution]
-   * @return {Particle}
+   * @param {Vec2D} [velocity]
+   * @param {number} [mass]
    */
-  addImpact(velocity, mass, coefficientOfRestitution = null) {
-    this._impacts.push({
-      velocity,
-      mass,
-      coefficientOfRestitution,
-    });
-    return this;
+  impact(
+    impactLine,
+    coefficientOfRestitution = 0.8,
+    velocity = null,
+    mass = null
+  ) {
+    const rotDiff = -impactLine.rotation;
+    // Transform coordinate system
+    this._velocity.rotate(rotDiff);
+
+    // Modify value
+    if (velocity && mass) {
+      // TODO
+      // const vel = new Vec2D(velocity.x, velocity.y);
+      // vel.rotate(rotDiff);
+      // const massTotal = this.mass + mass;
+      // this._velocity.y =
+      //   (this.mass * this._velocity.y +
+      //     mass * vel.y -
+      //     coefficientOfRestitution * mass * (this._velocity.y - vel.y)) /
+      //   massTotal;
+    } else {
+      this._velocity.y *= -coefficientOfRestitution;
+    }
+
+    // Undo transformation
+    this._velocity.rotate(-rotDiff);
   }
 
   /**
@@ -97,6 +117,7 @@ export default class Particle {
 
     // Update position + speed
     const duration = time - this._lastUpdate;
+    this._lastPosition = this._position.clone();
     this._position
       .add(Vec2D.multiply(accelerationSum, 0.5 * Math.pow(duration, 2)))
       .add(Vec2D.multiply(this._velocity, duration));
@@ -104,7 +125,6 @@ export default class Particle {
 
     // Clear stack
     this._accelerations = [];
-    this._impacts = [];
 
     // Update time
     this._lastUpdate = time;

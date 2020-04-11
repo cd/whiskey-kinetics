@@ -22,6 +22,40 @@ export default class Vec2D {
 
   /**
    * TODO
+   * @param {number} val
+   */
+  set magnitude(val) {
+    if (this.x === 0) {
+      this.y = val;
+      return;
+    }
+    const ratio = this.y / this.x;
+    this.x = Math.sqrt(Math.pow(val, 2) / (1 + Math.pow(ratio, 2)));
+    this.y = ratio * this.x;
+  }
+
+  /**
+   * TODO
+   * @return {number}
+   */
+  get rotation() {
+    if (this.y >= 0) {
+      if (this.x >= 0) {
+        return Math.atan(this.y / this.x);
+      } else {
+        return Math.atan(-this.x / this.y) + Math.PI / 2;
+      }
+    } else {
+      if (this.x >= 0) {
+        return Math.atan(this.x / -this.y) + (Math.PI * 3) / 2;
+      } else {
+        return Math.atan(-this.y / -this.x) + Math.PI;
+      }
+    }
+  }
+
+  /**
+   * TODO
    * @return {Vec2D}
    */
   get unitVector() {
@@ -49,6 +83,26 @@ export default class Vec2D {
     this.x *= number;
     this.y *= number;
     return this;
+  }
+
+  /**
+   * TODO
+   * @param {Vec2D} vec
+   * @return {Vec2D}
+   */
+  clone() {
+    return new Vec2D(this.x, this.y);
+  }
+
+  /**
+   * TODO
+   * @param {number} val rotation
+   */
+  rotate(val) {
+    const x = this.x * Math.cos(val) - this.y * Math.sin(val);
+    const y = this.x * Math.sin(val) + this.y * Math.cos(val);
+    this.x = x;
+    this.y = y;
   }
 
   /**
