@@ -6,7 +6,7 @@ import Vec2D from './Vec2D.mjs';
 export default class Particle {
   /**
    * TODO
-   * @param {number} mass
+   * @param {number} [mass]
    * @param {number} [time] Absolute time in seconds
    * @param {Vec2D} [position]
    * @param {Vec2D} [velocity]
@@ -15,7 +15,7 @@ export default class Particle {
    * @param {number} [referenceArea]
    */
   constructor(
-    mass,
+    mass = 1,
     time = 0,
     position = new Vec2D(0, 0),
     velocity = new Vec2D(0, 0),

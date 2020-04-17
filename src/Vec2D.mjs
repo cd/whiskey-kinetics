@@ -97,12 +97,14 @@ export default class Vec2D {
   /**
    * TODO
    * @param {number} val rotation
+   * @return {Vec2D}
    */
   rotate(val) {
     const x = this.x * Math.cos(val) - this.y * Math.sin(val);
     const y = this.x * Math.sin(val) + this.y * Math.cos(val);
     this.x = x;
     this.y = y;
+    return this;
   }
 
   /**
@@ -123,6 +125,17 @@ export default class Vec2D {
   add(vec) {
     this.x += vec.x;
     this.y += vec.y;
+    return this;
+  }
+
+  /**
+   * TODO
+   * @param {Vec2D} vec
+   * @return {Vec2D}
+   */
+  subtract(vec) {
+    this.x -= vec.x;
+    this.y -= vec.y;
     return this;
   }
 }

@@ -9,7 +9,7 @@ export default class Environment {
    * @param {number} [time] Absolute time in seconds
    */
   constructor(time) {
-    this.gravity = new Vec2D(0, -9.81);
+    this.gravity = new Vec2D(0, 0);
     this._lastUpdate = time || 0;
     this._particles = [];
     this._fluids = [];
@@ -41,37 +41,86 @@ export default class Environment {
    * TODO
    */
   detectCollisions() {
-    // TODO: multiple collisions?
     this._particles.forEach((particle) => {
-      this._borders.forEach((border) => {
-        const v1x = particle.position.x - particle._lastPosition.x;
-        const v1y = particle.position.y - particle._lastPosition.y;
+      this.detectCollisionByParticle(particle);
+    });
+  }
 
-        // TODO: 0 division
-        if (v1y === 0) {
-          return;
-        }
+  /**
+   * TODO max rekursion
+   * @param {Particle} particle
+   * @param {number} depth
+   */
+  detectCollisionByParticle(particle, depth = 0) {
+    const collisions = [];
+    const v1x = particle.position.x - particle._lastPosition.x;
+    const v1y = particle.position.y - particle._lastPosition.y;
 
-        const v2x = border.to.x;
-        const v2y = border.to.y;
-        const v1sx = particle._lastPosition.x;
-        const v1sy = particle._lastPosition.y;
-        const v2sx = border.from.x;
-        const v2sy = border.from.y;
-        const y =
+    this._borders.forEach((border) => {
+      const v2x = border.to.x;
+      const v2y = border.to.y;
+      const v1sx = particle._lastPosition.x;
+      const v1sy = particle._lastPosition.y;
+      const v2sx = border.from.x;
+      const v2sy = border.from.y;
+
+      if ((v1x * v2y) / v1y === v2x) return;
+
+      let x;
+      let y;
+      if (v1y === 0) {
+        y = (v1sy - v2sy) / v2y;
+        x = (v2sx + v2x * y - v1sx) / v1x;
+      } else {
+        y =
           (v2sx - v1sx - (v1x / v1y) * (v2sy - v1sy)) /
           (v1x * (v2y / v1y) - v2x);
-        const x = (v2sy - v1sy + v2y * y) / v1y;
-        if (x >= 0 && x <= 1 && y >= 0 && y <= 1) {
-          // TODO: be more exact
-          particle._position.x = particle._lastPosition.x + v1x * x * 0;
-          particle._position.y = particle._lastPosition.y + v1y * x * 0;
-          particle._lastPosition.x = particle.position.x;
-          particle._lastPosition.y = particle.position.y;
-          particle.impact(border.to); // todo: recursion?
-        }
-      });
+        x = (v2sy + v2y * y - v1sy) / v1y;
+      }
+      if (x > 0 && x <= 1 && y >= 0 && y <= 1) {
+        collisions.push({
+          x,
+          border,
+        });
+      }
     });
+    if (collisions.length > 0) {
+      const collision = collisions.sort((e1, e2) => e1.x - e2.x)[0];
+      this.particleBorderCollision(
+        particle,
+        Math.floor(collision.x * 1000) / 1000,
+        collision.border
+      );
+      if (depth < 10) {
+        this.detectCollisionByParticle(particle, depth + 1);
+      } else {
+        console.log('MAX DEPTH!!');
+      }
+    }
+  }
+
+  /**
+   * TODO
+   * @param {Particle} particle
+   * @param {number} x
+   * @param {Border} border
+   */
+  particleBorderCollision(particle, x, border) {
+    const wayTotal = particle._position
+      .clone()
+      .subtract(particle._lastPosition);
+    const wayDone = wayTotal.multiply(x);
+    particle._lastPosition.add(wayDone);
+    const oldVel = particle.velocity.magnitude;
+    particle.impact(border.to);
+    const newVel = particle.velocity.magnitude;
+    particle._position = particle._lastPosition
+      .clone()
+      .add(
+        particle.velocity.unitVector.multiply(
+          (newVel / oldVel) * (wayTotal.magnitude - wayDone.magnitude)
+        )
+      );
   }
 
   /**
