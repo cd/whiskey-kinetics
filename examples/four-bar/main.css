@@ -1,0 +1,54 @@
+form {
+  display: flex;
+  margin: 1em;
+}
+
+form > * + * {
+  margin-left: 1em;
+}
+
+input {
+  width: 5em;
+  padding: 0.5em;
+  margin-top: 0.5em;
+  border: 1px solid gray;
+}
+
+canvas {
+  border: 1px solid gray;
+}
+
+#canvas-wrapper {
+  width: 600px;
+  height: 400px;
+  position: relative;
+}
+
+.loading .loader{
+  display: block;
+}
+
+.loading canvas {
+  opacity: 0.5;
+}
+
+.loader {
+  display: none;
+  position: absolute;
+  box-sizing: border-box;
+  border: 1em solid lightgray;
+  border-top: 1em solid gray;
+  border-radius: 50%;
+  width: 4em;
+  height: 4em;
+  left: 50%;
+  top: 50%;
+  margin-left: -2em;
+  margin-top: -2em;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

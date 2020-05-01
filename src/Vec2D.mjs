@@ -90,6 +90,17 @@ export default class Vec2D {
    * @param {Vec2D} vec
    * @return {Vec2D}
    */
+  set(vec) {
+    this.x = vec.x;
+    this.y = vec.y;
+    return this;
+  }
+
+  /**
+   * TODO
+   * @param {Vec2D} vec
+   * @return {Vec2D}
+   */
   clone() {
     return new Vec2D(this.x, this.y);
   }

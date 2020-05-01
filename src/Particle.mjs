@@ -6,22 +6,18 @@ import Vec2D from './Vec2D.mjs';
 export default class Particle {
   /**
    * TODO
+   * @param {Vec2D} [position]
    * @param {number} [mass]
    * @param {number} [time] Absolute time in seconds
-   * @param {Vec2D} [position]
    * @param {Vec2D} [velocity]
-   * @param {number} [coefficientOfRestitution]
    * @param {number} [dragCoefficient]
    * @param {number} [referenceArea]
    */
   constructor(
+    position = new Vec2D(0, 0),
     mass = 1,
     time = 0,
-    position = new Vec2D(0, 0),
-    velocity = new Vec2D(0, 0),
-    coefficientOfRestitution = 1,
-    dragCoefficient = 1,
-    referenceArea = 1
+    velocity = new Vec2D(0, 0)
   ) {
     this._accelerations = [];
     this._lastUpdate = time;
@@ -29,9 +25,11 @@ export default class Particle {
     this._position = position.clone();
     this._lastPosition = position.clone();
     this._velocity = velocity;
-    this.dragCoefficient = dragCoefficient;
-    this.referenceArea = referenceArea;
-    this.coefficientOfRestitution = coefficientOfRestitution;
+    this.dragCoefficient = 1.35;
+    this.referenceArea = 80;
+    this.gravity = new Vec2D(0, -9.81);
+    this.density = 0.15;
+    this._forces = [];
   }
 
   /**
@@ -57,7 +55,7 @@ export default class Particle {
    */
   impact(
     impactLine,
-    coefficientOfRestitution = 0.8,
+    coefficientOfRestitution = 1,
     velocity = null,
     mass = null
   ) {
@@ -90,7 +88,7 @@ export default class Particle {
    * @return {Particle}
    */
   addForce(value) {
-    this.addAcceleration(Vec2D.multiply(value, 1 / this.mass));
+    this._forces.push(value);
     return this;
   }
 
@@ -111,8 +109,30 @@ export default class Particle {
   update(time) {
     // Sum accelerations
     const accelerationSum = new Vec2D(0, 0);
+
+    // Gravity
+    accelerationSum.add(this.gravity);
+
+    // Speed Resistance
+    accelerationSum.add(
+      this.velocity.unitVector.multiply(
+        (Math.pow(this.velocity.magnitude, 2) *
+          this.referenceArea *
+          this.dragCoefficient *
+          this.density) /
+          -2 /
+          this.mass
+      )
+    );
+
+    // Further accelerations
     this._accelerations.forEach((acceleration) => {
       accelerationSum.add(acceleration);
+    });
+
+    // External forces
+    this._forces.forEach((force) => {
+      accelerationSum.add(force.clone().multiply(1 / this.mass));
     });
 
     // Update position + speed
@@ -125,6 +145,7 @@ export default class Particle {
 
     // Clear stack
     this._accelerations = [];
+    this._forces = [];
 
     // Update time
     this._lastUpdate = time;
