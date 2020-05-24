@@ -3,17 +3,17 @@ const scale = 60;
 const canvasHeight = 400;
 const canvasWidth = 600;
 const radius = 0.2;
-const scaleStress = 410 / 3000;
+const scaleStress = 765 / 3000;
 const gapX = 300;
 const gapY = 100;
 
 // Colors
-const white1 = 'rgb(246, 245, 238)';
-const white2 = 'rgb(232, 231, 225)';
-const gray1 = 'rgb(203, 203, 196)';
-const gray2 = 'rgb(185, 185, 178)';
-const black1 = 'rgb( 57, 57, 55 )';
-const black2 = 'rgb( 35, 35, 34 )';
+const white1 = 'white';
+const white2 = 'white';
+const gray1 = 'rgb(194, 194, 194)';
+const gray2 = 'rgb(161, 161, 161)';
+const black1 = 'rgb(56, 56, 56)';
+const black2 = 'rgb(41, 41, 41)';
 
 /**
  * TODO
@@ -99,21 +99,30 @@ const drawEnvironment = (A) => {
   background.addColorStop(1, white2);
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-  const ground = ctx.createLinearGradient(
-    0,
-    canvasHeight - A.position.y * scale - gapY,
-    0,
-    canvasHeight
-  );
-  ground.addColorStop(0, black1);
-  ground.addColorStop(1, black2);
-  ctx.fillStyle = ground;
-  ctx.fillRect(
-    0,
-    canvasHeight - A.position.y * scale - gapY,
-    canvasWidth,
-    canvasHeight
-  );
+  drawGrid();
+  ctx.strokeStyle = white2;
+  ctx.moveTo(0, canvasHeight - A.position.y * scale - gapY);
+  ctx.lineTo(canvasWidth, canvasHeight - A.position.y * scale - gapY);
+};
+
+const drawGrid = () => {
+  const gridsize = 50;
+  const totalX = Math.floor(canvasWidth / gridsize) + 1;
+  const totalY = Math.floor(canvasHeight / gridsize) + 1;
+  const gap = gridsize / 2;
+  ctx.strokeStyle = gray1;
+  for (let index = 0; index < totalX; index++) {
+    const x = index * gridsize;
+    ctx.moveTo(x - gap, 0);
+    ctx.lineTo(x - gap, canvasHeight);
+  }
+  for (let index = 0; index < totalY; index++) {
+    const y = index * gridsize;
+    ctx.moveTo(0, y - gap);
+    ctx.lineTo(canvasWidth, y - gap);
+  }
+  ctx.lineWidth = 1;
+  ctx.stroke();
 };
 
 const drawRope = (x1, y1, x2, y2) => {
@@ -173,10 +182,18 @@ const drawEngine = (x, y) => {
   grd.addColorStop(0, gray1);
   grd.addColorStop(1, gray2);
   ctx.fillStyle = grd;
-  ctx.fill();
-  ctx.lineWidth = 10;
-  ctx.strokeStyle = black2;
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = black1;
+  ctx.setLineDash([10]);
   ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(0 * scale + gapX, canvasHeight - 0 * scale - gapY);
+  ctx.lineTo(0.5 * scale + gapX, canvasHeight + 0.5 * scale - gapY);
+  ctx.lineTo(-0.5 * scale + gapX, canvasHeight + 0.5 * scale - gapY);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.fill();
 };
 
 const drawPoint = (x, y) => {
@@ -197,12 +214,12 @@ const drawPoint = (x, y) => {
     canvasHeight - y * scale - gapY,
     radius * scale
   );
-  grd.addColorStop(0, gray2);
-  grd.addColorStop(1, gray1);
+  grd.addColorStop(0, white1);
+  grd.addColorStop(1, white1);
   ctx.fillStyle = grd;
   ctx.fill();
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = gray2;
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = black1;
   ctx.stroke();
 };
 
@@ -214,16 +231,22 @@ const drawSpring = (x1, y1, x2, y2, colored, showRed = true) => {
     ctx.beginPath();
     ctx.moveTo(...from);
     ctx.lineTo(...to);
-    let r = 100;
-    let g = 100;
-    if (colored < 155) {
-      r += colored;
+    let r = 0;
+    let g = 0;
+    let b = 255;
+    if (colored <= 255) {
       g += colored;
+      b -= colored;
+    } else if (colored <= 510) {
+      r = colored - 255;
+      g = 255;
+      b = 0;
     } else {
       r = 255;
-      g = 255 - (colored - 155);
+      g = 765 - colored;
+      b = 0;
     }
-    ctx.strokeStyle = `rgb(${r}, ${g}, 70)`;
+    ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
     ctx.stroke();
   }
 };
