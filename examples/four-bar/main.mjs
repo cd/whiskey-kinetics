@@ -1,6 +1,4 @@
-import Particle from "../../src/Particle.mjs";
-import Vec2D from "../../src/Vec2D.mjs";
-import Link from "../../src/Link.mjs";
+import { Particle, Vec2D, Link } from "../../whiskey-kinetics.mjs";
 import draw from "./draw.mjs";
 
 // Simulation
