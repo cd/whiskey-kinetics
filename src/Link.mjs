@@ -1,4 +1,4 @@
-import Vec2D from './Vec2D.mjs';
+import Vec2D from "./Vec2D.mjs";
 
 /**
  * @class
@@ -12,22 +12,14 @@ export default class Link {
    * @param {number} [timestamp]
    * @param {number} [norminalLength]
    */
-  constructor(
-    from,
-    to,
-    compressible = true,
-    timestamp = 0,
-    norminalLength = null
-  ) {
+  constructor(from, to, compressible = true, timestamp = 0, norminalLength = null) {
     this._fromParticle = from;
     this._toParticle = to;
     this._compressible = compressible;
     this._lastUpdate = timestamp;
     this._norminalLength =
       norminalLength === null
-        ? this._toParticle.position
-            .clone()
-            .subtract(this._fromParticle.position).magnitude
+        ? this._toParticle.position.clone().subtract(this._fromParticle.position).magnitude
         : norminalLength;
     this._springConstant = 10000;
     this._dampingCoefficient = 0;
@@ -44,9 +36,7 @@ export default class Link {
    * @return {Vec2D}
    */
   getVector() {
-    return this._toParticle.position
-      .clone()
-      .subtract(this._fromParticle.position);
+    return this._toParticle.position.clone().subtract(this._fromParticle.position);
   }
 
   /**
@@ -73,12 +63,8 @@ export default class Link {
    */
   update(timestamp) {
     if (this.destroyed) return;
-    const dampingForce =
-      ((this._lastLength - this.length) / (timestamp - this._lastUpdate)) *
-      this._dampingCoefficient;
-    const forceVec = this.getVector().unitVector.multiply(
-      this.springForce - dampingForce
-    );
+    const dampingForce = ((this._lastLength - this.length) / (timestamp - this._lastUpdate)) * this._dampingCoefficient;
+    const forceVec = this.getVector().unitVector.multiply(this.springForce - dampingForce);
     if (forceVec.magnitude > this.maxSpringForce) {
       this.destroyed = true;
       return;

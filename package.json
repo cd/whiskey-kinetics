@@ -1,14 +1,4 @@
 {
   "name": "whiskey-kinetics",
-  "version": "0.1.0",
-  "scripts": {
-    "lint": "eslint ./src/*.mjs"
-  },
-  "devDependencies": {
-    "eslint": "^6.8.0",
-    "eslint-config-google": "^0.14.0",
-    "eslint-config-prettier": "^6.10.1",
-    "eslint-plugin-prettier": "^3.1.2",
-    "prettier": "^2.0.2"
-  }
+  "version": "0.1.1"
 }

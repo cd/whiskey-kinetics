@@ -1,7 +1,7 @@
-import Particle from '../../src/Particle.mjs';
-import Vec2D from '../../src/Vec2D.mjs';
-import Link from '../../src/Link.mjs';
-import draw from './draw.mjs';
+import Particle from "../../src/Particle.mjs";
+import Vec2D from "../../src/Vec2D.mjs";
+import Link from "../../src/Link.mjs";
+import draw from "./draw.mjs";
 
 // Simulation
 const simulate = () => {
@@ -14,10 +14,7 @@ const simulate = () => {
   const mpE2 = new Particle(new Vec2D(2, 4), 10);
 
   // Load
-  const mpLoad = new Particle(
-    new Vec2D(2, 3),
-    document.querySelector('[data-load]').value
-  );
+  const mpLoad = new Particle(new Vec2D(2, 3), document.querySelector("[data-load]").value);
 
   // Links
   const lLever = new Link(mpC, mpD);
@@ -62,11 +59,11 @@ const simulate = () => {
   };
 
   // Rotation speed
-  const speed = document.querySelector('[data-speed]').value;
+  const speed = document.querySelector("[data-speed]").value;
 
   // Simulation data
-  const duration = document.querySelector('[data-duration]').value;
-  const steps = document.querySelector('[data-steps]').value;
+  const duration = document.querySelector("[data-duration]").value;
+  const steps = document.querySelector("[data-steps]").value;
   const durationPerStep = duration / steps;
 
   for (let index = 1; index < steps; index++) {
@@ -88,32 +85,20 @@ const simulate = () => {
     frames.posE2.push(mpE2.position.clone());
     frames.posLoad.push(mpLoad.position.clone());
     frames.stressLever.push(lLever.destroyed ? null : lLever.springForce);
-    frames.stressEnclosure.push(
-      lEnclosure.destroyed ? null : lEnclosure.springForce
-    );
-    frames.stressEnclosureBE1.push(
-      lEnclosureBE1.destroyed ? null : lEnclosureBE1.springForce
-    );
-    frames.stressEnclosureE1E2.push(
-      lEnclosureE1E2.destroyed ? null : lEnclosureE1E2.springForce
-    );
-    frames.stressEnclosureCE1.push(
-      lEnclosureCE1.destroyed ? null : lEnclosureCE1.springForce
-    );
-    frames.stressEnclosureCE2.push(
-      lEnclosureCE2.destroyed ? null : lEnclosureCE2.springForce
-    );
+    frames.stressEnclosure.push(lEnclosure.destroyed ? null : lEnclosure.springForce);
+    frames.stressEnclosureBE1.push(lEnclosureBE1.destroyed ? null : lEnclosureBE1.springForce);
+    frames.stressEnclosureE1E2.push(lEnclosureE1E2.destroyed ? null : lEnclosureE1E2.springForce);
+    frames.stressEnclosureCE1.push(lEnclosureCE1.destroyed ? null : lEnclosureCE1.springForce);
+    frames.stressEnclosureCE2.push(lEnclosureCE2.destroyed ? null : lEnclosureCE2.springForce);
   }
 
   // Loading finished
-  document.querySelector('#canvas-wrapper').classList.remove('loading');
+  document.querySelector("#canvas-wrapper").classList.remove("loading");
 
   const start = Date.now();
   const animate = () => {
     // Calc frame / array index
-    const indexFrame = Math.floor(
-      (Date.now() - start) / 1000 / durationPerStep
-    );
+    const indexFrame = Math.floor((Date.now() - start) / 1000 / durationPerStep);
 
     // Return if animation finished
     if (indexFrame + 1 >= steps) return;
@@ -126,9 +111,9 @@ const simulate = () => {
   window.requestAnimationFrame(animate);
 };
 
-window.addEventListener('submit', (e) => {
+window.addEventListener("submit", (e) => {
   e.preventDefault();
-  document.querySelector('#canvas-wrapper').classList.add('loading');
+  document.querySelector("#canvas-wrapper").classList.add("loading");
   window.setTimeout(simulate, 500);
 });
 

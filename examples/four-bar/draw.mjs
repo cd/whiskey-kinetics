@@ -1,4 +1,4 @@
-const ctx = document.querySelector('#canvas').getContext('2d');
+const ctx = document.querySelector("#canvas").getContext("2d");
 const scale = 60;
 const canvasHeight = 400;
 const canvasWidth = 600;
@@ -8,12 +8,12 @@ const gapX = 300;
 const gapY = 100;
 
 // Colors
-const white1 = 'white';
-const white2 = 'white';
-const gray1 = 'rgb(194, 194, 194)';
-const gray2 = 'rgb(161, 161, 161)';
-const black1 = 'rgb(56, 56, 56)';
-const black2 = 'rgb(41, 41, 41)';
+const white1 = "white";
+const white2 = "white";
+const gray1 = "rgb(194, 194, 194)";
+const gray2 = "rgb(161, 161, 161)";
+const black1 = "rgb(56, 56, 56)";
+const black2 = "rgb(41, 41, 41)";
 
 /**
  * TODO
@@ -136,14 +136,7 @@ const drawRope = (x1, y1, x2, y2) => {
 
 const drawLoad = (x, y) => {
   ctx.beginPath();
-  ctx.arc(
-    x * scale + gapX,
-    canvasHeight - y * scale - gapY,
-    radius * scale * 2,
-    0,
-    2 * Math.PI,
-    false
-  );
+  ctx.arc(x * scale + gapX, canvasHeight - y * scale - gapY, radius * scale * 2, 0, 2 * Math.PI, false);
   const grd = ctx.createRadialGradient(
     (x - radius / 2) * scale + gapX,
     canvasHeight - (y + radius / 2) * scale - gapY,
@@ -163,14 +156,7 @@ const drawLoad = (x, y) => {
 
 const drawEngine = (x, y) => {
   ctx.beginPath();
-  ctx.arc(
-    x * scale + gapX,
-    canvasHeight - y * scale - gapY,
-    1 * scale,
-    0,
-    2 * Math.PI,
-    false
-  );
+  ctx.arc(x * scale + gapX, canvasHeight - y * scale - gapY, 1 * scale, 0, 2 * Math.PI, false);
   const grd = ctx.createRadialGradient(
     x * scale + gapX,
     canvasHeight - y * scale - gapY,
@@ -198,14 +184,7 @@ const drawEngine = (x, y) => {
 
 const drawPoint = (x, y) => {
   ctx.beginPath();
-  ctx.arc(
-    x * scale + gapX,
-    canvasHeight - y * scale - gapY,
-    radius * scale,
-    0,
-    2 * Math.PI,
-    false
-  );
+  ctx.arc(x * scale + gapX, canvasHeight - y * scale - gapY, radius * scale, 0, 2 * Math.PI, false);
   const grd = ctx.createRadialGradient(
     x * scale + gapX,
     canvasHeight - y * scale - gapY,

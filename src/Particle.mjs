@@ -1,4 +1,4 @@
-import Vec2D from './Vec2D.mjs';
+import Vec2D from "./Vec2D.mjs";
 
 /**
  * @class
@@ -13,12 +13,7 @@ export default class Particle {
    * @param {number} [dragCoefficient]
    * @param {number} [referenceArea]
    */
-  constructor(
-    position = new Vec2D(0, 0),
-    mass = 1,
-    time = 0,
-    velocity = new Vec2D(0, 0)
-  ) {
+  constructor(position = new Vec2D(0, 0), mass = 1, time = 0, velocity = new Vec2D(0, 0)) {
     this._accelerations = [];
     this._lastUpdate = time;
     this.mass = mass;
@@ -53,12 +48,7 @@ export default class Particle {
    * @param {Vec2D} [velocity]
    * @param {number} [mass]
    */
-  impact(
-    impactLine,
-    coefficientOfRestitution = 1,
-    velocity = null,
-    mass = null
-  ) {
+  impact(impactLine, coefficientOfRestitution = 1, velocity = null, mass = null) {
     const rotDiff = -impactLine.rotation;
     // Transform coordinate system
     this._velocity.rotate(rotDiff);
@@ -116,10 +106,7 @@ export default class Particle {
     // Speed Resistance
     accelerationSum.add(
       this.velocity.unitVector.multiply(
-        (Math.pow(this.velocity.magnitude, 2) *
-          this.referenceArea *
-          this.dragCoefficient *
-          this.density) /
+        (Math.pow(this.velocity.magnitude, 2) * this.referenceArea * this.dragCoefficient * this.density) /
           -2 /
           this.mass
       )
