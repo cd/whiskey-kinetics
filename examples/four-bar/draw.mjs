@@ -17,20 +17,20 @@ const black2 = "rgb(41, 41, 41)";
 
 /**
  * TODO
- * @param {Particle} A
- * @param {Particle} D
+ * @param {Particle} posA
+ * @param {Particle} posD
  * @param {Array} frames
  * @param {number} indexFrame
  */
-export default function (A, D, frames, indexFrame) {
-  drawEnvironment(A);
-  drawEngine(A.position.x, A.position.y);
+export default function (posA, posD, frames, indexFrame) {
+  drawEnvironment(posA);
+  drawEngine(posA.x, posA.y);
   if (frames.stressLever[indexFrame] !== null) {
     drawSpring(
       frames.posC[indexFrame].x,
       frames.posC[indexFrame].y,
-      D.position.x,
-      D.position.y,
+      posD.x,
+      posD.y,
       Math.abs(frames.stressLever[indexFrame]) * scaleStress
     );
   }
@@ -81,7 +81,7 @@ export default function (A, D, frames, indexFrame) {
   }
   drawPoint(frames.posB[indexFrame].x, frames.posB[indexFrame].y);
   drawPoint(frames.posC[indexFrame].x, frames.posC[indexFrame].y);
-  drawPoint(D.position.x, D.position.y);
+  drawPoint(posD.x, posD.y);
   drawPoint(frames.posE1[indexFrame].x, frames.posE1[indexFrame].y);
   drawPoint(frames.posE2[indexFrame].x, frames.posE2[indexFrame].y);
   drawRope(
@@ -93,7 +93,7 @@ export default function (A, D, frames, indexFrame) {
   drawLoad(frames.posLoad[indexFrame].x, frames.posLoad[indexFrame].y);
 }
 
-const drawEnvironment = (A) => {
+const drawEnvironment = (posA) => {
   const background = ctx.createLinearGradient(0, 0, 0, canvasHeight);
   background.addColorStop(0, white1);
   background.addColorStop(1, white2);
@@ -101,8 +101,8 @@ const drawEnvironment = (A) => {
   ctx.fillRect(0, 0, canvasWidth, canvasHeight);
   drawGrid();
   ctx.strokeStyle = white2;
-  ctx.moveTo(0, canvasHeight - A.position.y * scale - gapY);
-  ctx.lineTo(canvasWidth, canvasHeight - A.position.y * scale - gapY);
+  ctx.moveTo(0, canvasHeight - posA.y * scale - gapY);
+  ctx.lineTo(canvasWidth, canvasHeight - posA.y * scale - gapY);
 };
 
 const drawGrid = () => {
