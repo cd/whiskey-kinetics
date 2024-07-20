@@ -50,6 +50,7 @@ export class Link {
    * @return {Vec2D}
    */
   get springForce() {
+    if (this.destroyed) return null;
     const lengthDiff = this.length - this._norminalLength;
     if (lengthDiff <= 0 && !this._compressible) return 0;
     return lengthDiff * this._springConstant;

@@ -1,3 +1,7 @@
+h2 {
+  margin-top: 2em;
+}
+
 form {
   display: flex;
   margin: 1em;
@@ -18,7 +22,7 @@ canvas {
   border: 1px solid gray;
 }
 
-#canvas-wrapper {
+.canvas-wrapper {
   width: 600px;
   height: 400px;
   position: relative;
@@ -29,30 +33,30 @@ canvas {
 }
 
 .loading canvas {
-  opacity: 0.5;
+  opacity: 0.1;
 }
 
-.loader {
+.loading .progress-bar-wrapper {
+  display: block;
+}
+
+.progress-bar-wrapper {
   display: none;
   position: absolute;
-  box-sizing: border-box;
-  border: 1em solid lightgray;
-  border-top: 1em solid gray;
-  border-radius: 50%;
-  width: 4em;
-  height: 4em;
+  height: 8px;
+  width: 200px;
   left: 50%;
   top: 50%;
-  margin-left: -2em;
-  margin-top: -2em;
-  animation: spin 1s linear infinite;
+  margin-left: -100px;
+  margin-top: -4px;
+  background-color: #bbbbbb;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+.progress-bar {
+  height: 100%;
+  width: 1px;
+  background-color: #636363;
+  transition: width 0.2s;
 }

@@ -2,6 +2,6 @@
 
 Simple and realistic 2D physics engine in JavaScript
 
-Example: https://cd.github.io/whiskey-kinetics/examples/four-bar/
+Examples: https://cd.github.io/whiskey-kinetics/examples
 
 ![Demo Animation](demo.gif)
