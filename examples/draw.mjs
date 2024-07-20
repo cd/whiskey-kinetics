@@ -113,7 +113,7 @@ export default class TCanvas {
   }
 
   drawLink(x1, y1, x2, y2, style = {}) {
-    if (style.stress === null) return;
+    if (style.stress === null) return this;
     this._ctx.beginPath();
     this._ctx.moveTo(x1 * this._scale + this._dx, this._canvasHeight - y1 * this._scale - this._dy);
     this._ctx.lineTo(x2 * this._scale + this._dx, this._canvasHeight - y2 * this._scale - this._dy);
