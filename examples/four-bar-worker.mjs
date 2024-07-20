@@ -44,7 +44,7 @@ onmessage = (e) => {
 
   // Simulation parameters
   const duration = 20;
-  const steps = 500000;
+  const steps = 50000;
   const durationPerStep = duration / steps;
 
   // Animation parameters
