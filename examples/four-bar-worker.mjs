@@ -1,4 +1,4 @@
-import { Particle, Vec2D, Link } from "../../whiskey-kinetics.mjs";
+import { Particle, Vec2D, Link } from "../whiskey-kinetics.mjs";
 
 onmessage = (e) => {
   // Rotation speed
