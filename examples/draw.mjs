@@ -10,6 +10,7 @@ export default class TCanvas {
     this._scale = scale;
     this._dx = dx;
     this._dy = dy;
+    this._ctx.lineCap = "round";
   }
 
   clear() {
