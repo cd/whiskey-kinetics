@@ -1,36 +1,46 @@
 /**
+ * Class for links (to connect two particles).
  * @class
  */
 export class Link {
   /**
-   * TODO
-   * @param {MassPoint} from
-   * @param {MassPoint|Vec2D} to
-   * @param {boolean} [compressible]
-   * @param {number} [timestamp]
-   * @param {number} [norminalLength]
+   * Create a link between two particles.
+   * @param {Particle} from
+   * @param {Particle} to
+   * @param {object} [properties]
+   * @param {number} [properties.initialTime] Starting time in seconds (default: `0`).
+   * @param {boolean} [properties.compressible] For rope-like behavior (no absorption of compressive forces), this
+   *   value must be set to `false` (default: `true`).
+   * @param {number} [properties.norminalLength] Unstressed length (in m) (default: distance between the particles).
+   * @param {number} [properties.maxTensileForce] Tensile force in N at which the element is destroyed
+   *   (default: `35550`).
+   *
+   *   Example: If the link is to represent a construction steel bar (tensile strength of ~450 N/mm²) with a
+   *   diameter of 10 mm (area 79 mm²), the value would be 35550 N (450 N/mm² ⋅ 79 mm²).
+   * @param {number} [properties.tensileStiffness] Arithmetic product of modulus of elasticity and
+   *   cross sectional area (E ⋅ A) in N (default: `16590000`).
+   *
+   *   Example: If the link is to represent a construction steel bar (modulus of elasticity 210000 N/mm²) with a
+   *   diameter of 10 mm (area 79 mm²), the value would be 16590000 N (210000 N/mm² ⋅ 79 mm²).
+   * @param {number} [properties.dampingCoefficient] Parameter to control the damping effect, based on the velocity of
+   *   the change of the length (default: `0`).
    */
-  constructor(from, to, compressible = true, timestamp = 0, norminalLength = null) {
+  constructor(from, to, properties = {}) {
     this._fromParticle = from;
     this._toParticle = to;
-    this._compressible = compressible;
-    this._lastUpdate = timestamp;
-    this._norminalLength =
-      norminalLength === null
-        ? this._toParticle.position.clone().subtract(this._fromParticle.position).magnitude
-        : norminalLength;
-    this._springConstant = 10000;
-    this._dampingCoefficient = 0;
-    this._lastLength = this.length;
-
-    // TODO: differentiate between tension and pressure?
-    this.maxSpringForce = 3000;
-
+    this._lastUpdate = properties.initialTime || 0;
+    this.compressible = properties.compressible === false ? false : true;
+    this.norminalLength =
+      properties.norminalLength || this._toParticle.position.clone().subtract(this._fromParticle.position).magnitude;
+    this.springConstant = (properties.tensileStiffness || 16590000) / this.norminalLength;
+    this.dampingCoefficient = properties.dampingCoefficient || 0;
+    this.maxTensileForce = properties.maxTensileForce || 35550;
     this.destroyed = false;
+    this._dampingForce = 0;
   }
 
   /**
-   * TODO
+   * Get vector between 'from' and 'to' particle.
    * @return {Vec2D}
    */
   getVector() {
@@ -38,7 +48,7 @@ export class Link {
   }
 
   /**
-   * TODO
+   * Get distance between the 'from' and 'to' particles.
    * @return {number}
    */
   get length() {
@@ -46,112 +56,111 @@ export class Link {
   }
 
   /**
-   * TODO
+   * Get spring force.
    * @return {Vec2D}
    */
   get springForce() {
     if (this.destroyed) return null;
-    const lengthDiff = this.length - this._norminalLength;
-    if (lengthDiff <= 0 && !this._compressible) return 0;
-    return lengthDiff * this._springConstant;
+    const lengthDiff = this.length - this.norminalLength;
+    if (lengthDiff < 0 && !this.compressible) return 0;
+    return lengthDiff * this.springConstant;
   }
 
   /**
-   * TODO
+   * Get damping force.
+   * @return {Vec2D}
+   */
+  get dampingForce() {
+    if (this.destroyed) return null;
+    return this._dampingForce;
+  }
+
+  /**
+   * Apply the spring and damping force to the destroy status and the 'from' and 'to' particles.
    * @param {number} timestamp
    */
   update(timestamp) {
     if (this.destroyed) return;
-    const dampingForce = ((this._lastLength - this.length) / (timestamp - this._lastUpdate)) * this._dampingCoefficient;
-    const forceVec = this.getVector().unitVector.multiply(this.springForce - dampingForce);
-    if (forceVec.magnitude > this.maxSpringForce) {
+
+    // Calc damping force
+    const lastLength = this._toParticle._lastPosition.clone().subtract(this._fromParticle._lastPosition).magnitude;
+    this._dampingForce = ((lastLength - this.length) / (timestamp - this._lastUpdate)) * this.dampingCoefficient;
+    const dampingForceVec = this.getVector().unitVector.multiply(this._dampingForce);
+
+    // Calc spring force
+    const springForceVec = this.getVector().unitVector.multiply(this.springForce);
+
+    // Calc total force
+    const totalForceVec = dampingForceVec.clone().add(springForceVec);
+    if (totalForceVec.magnitude > this.maxTensileForce) {
       this.destroyed = true;
       return;
     }
-    this._fromParticle.addForce(forceVec);
-    if (this._toParticle) {
-      const newForce = forceVec.clone().multiply(-1);
-      this._toParticle.addForce(newForce);
-    }
+
+    // Apply total force to particles
+    this._fromParticle.addForce(totalForceVec);
+    this._toParticle.addForce(totalForceVec.clone().multiply(-1));
+
+    this._lastUpdate = timestamp;
   }
 }
 
 /**
+ * Class for mass points / particles.
  * @class
  */
 export class Particle {
   /**
-   * TODO
-   * @param {Vec2D} [position]
-   * @param {number} [mass]
-   * @param {number} [time] Absolute time in seconds
-   * @param {Vec2D} [velocity]
-   * @param {number} [dragCoefficient]
-   * @param {number} [referenceArea]
+   * Create a particle.
+   * @param {Vec2D} position
+   * @param {number} mass Mass in kg.
+   * @param {object} [properties]
+   * @param {number} [properties.initialTime] Starting time in seconds (default: `0`)
+   * @param {Vec2D} [properties.velocity] Starting velocity in m/s (default: `0`)
+   * @param {number} [properties.dragForceFactor] Arithmetic product (in kg) of drag coefficient, reference area and
+   *  mass density of the fluid (default: `0`). This value is used to calculate the flow resistance force when the
+   *  particle moves during update(). Learn more at https://en.wikipedia.org/wiki/Drag_coefficient
+   *
+   *  Example: Simulation of a golf ball
+   *    - drag coefficient ~0.5
+   *    - reference area ~0.0014 m³ (π * (42.7 mm)² / 4)
+   *    - mass density (of the air) ~1.2 kg/m³
+   *
+   *  The particle representing the ball would therefore have a dragForceFactor of 0.00084 kg (0.5 * 0.0014 * 1.2).
+   *  However, if the particle is only 1 of 1000 particles that represent the ball (finite element method), then
+   *  the value must be divided by the number of particles. In this example, this would be 0.00000084 kg.
    */
-  constructor(position = new Vec2D(0, 0), mass = 1, time = 0, velocity = new Vec2D(0, 0)) {
+  constructor(position, mass, properties = {}) {
     this._accelerations = [];
-    this._lastUpdate = time;
-    this.mass = mass;
+    this._forces = [];
     this._position = position.clone();
     this._lastPosition = position.clone();
-    this._velocity = velocity;
-    this.dragCoefficient = 1.35;
-    this.referenceArea = 80;
-    this.gravity = new Vec2D(0, -9.81);
-    this.density = 0.15;
-    this._forces = [];
+    this.mass = mass;
+    this._lastUpdate = properties.initialTime || 0;
+    this._velocity = properties.velocity || new Vec2D(0, 0);
+    this.dragForceFactor = properties.dragForceFactor || 0;
   }
 
   /**
-   * TODO
+   * Get velocity of the particle.
+   * @return {Vec2D}
    */
   get velocity() {
     return this._velocity;
   }
 
   /**
-   * TODO
+   * Get position of the particle.
+   * @return {Vec2D}
    */
   get position() {
     return this._position;
   }
 
   /**
-   * TODO
-   * @param {Vec2D} impactLine
-   * @param {number} [coefficientOfRestitution]
-   * @param {Vec2D} [velocity]
-   * @param {number} [mass]
-   */
-  impact(impactLine, coefficientOfRestitution = 1, velocity = null, mass = null) {
-    const rotDiff = -impactLine.rotation;
-    // Transform coordinate system
-    this._velocity.rotate(rotDiff);
-
-    // Modify value
-    if (velocity && mass) {
-      // TODO
-      // const vel = new Vec2D(velocity.x, velocity.y);
-      // vel.rotate(rotDiff);
-      // const massTotal = this.mass + mass;
-      // this._velocity.y =
-      //   (this.mass * this._velocity.y +
-      //     mass * vel.y -
-      //     coefficientOfRestitution * mass * (this._velocity.y - vel.y)) /
-      //   massTotal;
-    } else {
-      this._velocity.y *= -coefficientOfRestitution;
-    }
-
-    // Undo transformation
-    this._velocity.rotate(-rotDiff);
-  }
-
-  /**
-   * TODO
-   * @param {Vec2D} value
-   * @return {Particle}
+   * Add external force to the particle. This only takes effect on the next update().
+   * @param {Vec2D} value (in N)
+   * @return {Particle} this
    */
   addForce(value) {
     this._forces.push(value);
@@ -159,9 +168,9 @@ export class Particle {
   }
 
   /**
-   * TODO
-   * @param {Vec2D} value
-   * @return {Particle}
+   * Add external acceleration (e. g. gravity) to the particle. This only takes effect on the next update().
+   * @param {Vec2D} value (in m/s²)
+   * @return {Particle} this
    */
   addAcceleration(value) {
     this._accelerations.push(value);
@@ -169,23 +178,16 @@ export class Particle {
   }
 
   /**
-   * TODO
-   * @param {number} time
+   * Update position and speed depending on external accelerations, external forces and the speed resistance.
+   * @param {number} time (in s)
    */
   update(time) {
     // Sum accelerations
     const accelerationSum = new Vec2D(0, 0);
 
-    // Gravity
-    accelerationSum.add(this.gravity);
-
     // Speed Resistance
     accelerationSum.add(
-      this.velocity.unitVector.multiply(
-        (Math.pow(this.velocity.magnitude, 2) * this.referenceArea * this.dragCoefficient * this.density) /
-          -2 /
-          this.mass
-      )
+      this.velocity.unitVector.multiply((Math.pow(this.velocity.magnitude, 2) * this.dragForceFactor) / -2 / this.mass)
     );
 
     // Further accelerations
@@ -202,9 +204,9 @@ export class Particle {
     const duration = time - this._lastUpdate;
     this._lastPosition = this._position.clone();
     this._position
-      .add(Vec2D.multiply(accelerationSum, 0.5 * Math.pow(duration, 2)))
-      .add(Vec2D.multiply(this._velocity, duration));
-    this._velocity.add(Vec2D.multiply(accelerationSum, duration));
+      .add(accelerationSum.clone().multiply(0.5 * Math.pow(duration, 2)))
+      .add(this._velocity.clone().multiply(duration));
+    this._velocity.add(accelerationSum.clone().multiply(duration));
 
     // Clear stack
     this._accelerations = [];
@@ -216,11 +218,12 @@ export class Particle {
 }
 
 /**
+ * Helper class for working with two-dimensional vectors.
  * @class
  */
 export class Vec2D {
   /**
-   * TODO
+   * Create a 2D vector.
    * @param {number} x
    * @param {number} y
    */
@@ -230,7 +233,7 @@ export class Vec2D {
   }
 
   /**
-   * TODO
+   * Get magnitude of the vector.
    * @return {number}
    */
   get magnitude() {
@@ -238,7 +241,7 @@ export class Vec2D {
   }
 
   /**
-   * TODO
+   * Set magnitude of the vector.
    * @param {number} val
    */
   set magnitude(val) {
@@ -252,8 +255,8 @@ export class Vec2D {
   }
 
   /**
-   * TODO
-   * @return {number}
+   * Get rotation of the vector.
+   * @return {number} in rad
    */
   get rotation() {
     if (this.y >= 0) {
@@ -272,7 +275,7 @@ export class Vec2D {
   }
 
   /**
-   * TODO
+   * Get unit vector copy of the vector.
    * @return {Vec2D}
    */
   get unitVector() {
@@ -282,17 +285,7 @@ export class Vec2D {
   }
 
   /**
-   * TODO
-   * @param {Vec2D} valVec2D
-   * @param {Vec2D} valNumber
-   * @return {Vec2D}
-   */
-  static multiply(valVec2D, valNumber) {
-    return new Vec2D(valVec2D.x * valNumber, valVec2D.y * valNumber);
-  }
-
-  /**
-   * TODO
+   * Multiply vector.
    * @param {number} number
    * @return {Vec2D}
    */
@@ -303,8 +296,8 @@ export class Vec2D {
   }
 
   /**
-   * TODO
-   * @param {Vec2D} vec
+   * Set the X and Y coordinates according to the specified vector.
+   * @param {Vec2D} vec from which the X and Y coordinates are to be taken.
    * @return {Vec2D}
    */
   set(vec) {
@@ -314,8 +307,7 @@ export class Vec2D {
   }
 
   /**
-   * TODO
-   * @param {Vec2D} vec
+   * Get copy of the vector.
    * @return {Vec2D}
    */
   clone() {
@@ -323,8 +315,8 @@ export class Vec2D {
   }
 
   /**
-   * TODO
-   * @param {number} val rotation
+   * Apply rotation to the vector.
+   * @param {number} val (in rad) by which the vector is to be rotated
    * @return {Vec2D}
    */
   rotate(val) {
@@ -336,17 +328,7 @@ export class Vec2D {
   }
 
   /**
-   * TODO
-   * @param {Vec2D} vec1
-   * @param {Vec2D} vec2
-   * @return {Vec2D}
-   */
-  static add(vec1, vec2) {
-    return new Vec2D(vec1.x + vec2.x, vec1.y + vec2.y);
-  }
-
-  /**
-   * TODO
+   * Add vector.
    * @param {Vec2D} vec
    * @return {Vec2D}
    */
@@ -357,7 +339,7 @@ export class Vec2D {
   }
 
   /**
-   * TODO
+   * Subtract vector.
    * @param {Vec2D} vec
    * @return {Vec2D}
    */
