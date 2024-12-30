@@ -85,7 +85,7 @@ export class Link {
     // Calc damping force
     const lastLength = this._toParticle._lastPosition.clone().subtract(this._fromParticle._lastPosition).magnitude;
     this._dampingForce = ((lastLength - this.length) / (timestamp - this._lastUpdate)) * this.dampingCoefficient;
-    const dampingForceVec = this.getVector().unitVector.multiply(this._dampingForce);
+    const dampingForceVec = this.getVector().unitVector.multiply(-this._dampingForce);
 
     // Calc spring force
     const springForceVec = this.getVector().unitVector.multiply(this.springForce);
