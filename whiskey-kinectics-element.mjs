@@ -97,7 +97,12 @@ class WhiskeyKineticsElement extends HTMLElement {
       const start = Date.now();
       const animateFrame = () => {
         const frameIndex = Math.floor(((Date.now() - start) / 1000) * e.data.fps);
-        module.draw(this.shadowRoot.querySelector("canvas").getContext("2d"), frameIndex, e.data);
+        const continueAnimation = module.draw(
+          this.shadowRoot.querySelector("canvas").getContext("2d"),
+          frameIndex,
+          e.data
+        );
+        if (!continueAnimation) return;
         window.requestAnimationFrame(animateFrame);
       };
       animateFrame();
