@@ -1,7 +1,5 @@
 # whiskey-kinetics
 
-Simple and realistic 2D physics engine in JavaScript
+Simple 2D physics engine in JavaScript (fun project for private use).
 
-Examples: https://www.diede.dev/blog/kinetics-with-javascript
-
-![Demo Animation](demo.gif)
+Introduction and interactive examples: https://www.diede.dev/blog/kinetics-for-web-developers
